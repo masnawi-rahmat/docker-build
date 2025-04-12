@@ -17,8 +17,10 @@ RUN mkdir -p ${HOME} && \
     groupadd -r cypress && \
     useradd -r -g cypress -d ${HOME} -s /sbin/nologin cypress && \
     chown -R cypress:cypress ${HOME}
+#RUN mkdir -p ${HOME} && \
+#groupadd -r cypress && useradd -r -g cypress -d ${HOME} -s /sbin/nologin cypress && \
+#chown -R cypress:cypress ${HOME}
 
-# Create additional repo
 RUN echo '[Google-Chrome]' > /etc/yum.repos.d/google.repo && \
     echo 'name=Google-Chrome' >> /etc/yum.repos.d/google.repo && \
     echo 'baseurl=http://dl.google.com/linux/chrome/rpm/stable/$basearch' >> /etc/yum.repos.d/google.repo && \
@@ -116,6 +118,7 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
 
 #Install cypress and dependencies
+#RUN npm install -g --unsafe-perm \
 RUN npm config set prefix /app && \
     npm install -g --unsafe-perm --prefix /app \
     cypress@latest \
@@ -163,11 +166,13 @@ RUN npm config set prefix /app && \
 
 # Install Playwright
 RUN cd /app && \
-    npm install --no-save @playwright && \
-    npmx playwright install && \
+    npm install --no-save @playwright/test && \
+    npx playwright install && \
     chmod -R 777 ${HOME} /ms-playwright /opt || true
 
 # Set JAVA and DISPLAY
+#ENV JAVA_HOME=/usr/lib/jvm/java-${JAVA_VERSION}-openjdk \
+    #PATH="/usr/lib/jvm/java-${JAVA_VERSION}-openjdk/bin:${PATH}" \
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk \
     PATH="/usr/lib/jvm/java-17-openjdk/bin:${PATH}" \
     DISPLAY=:99
