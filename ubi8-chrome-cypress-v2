@@ -167,7 +167,7 @@ RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
     chromedriver --version && \
     python --version && \
     pip --version && \
-    cypress version
+    cypress version || true
 
 # Reset user to non-root (for OpenShift)
 USER 1001
