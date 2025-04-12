@@ -1,0 +1,204 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Always use root for setup
+USER root
+
+# Environment variables
+ENV NODE_VERSION=20 \
+    #NPM_VERSION=18.19.4 \
+    PYTHON_VERSION=3.12 \
+    JAVA_VERSION=17 \
+    #HOME=/opt/app-root/src
+    HOME=/app
+
+# Create non-root user and necessary directories
+RUN mkdir -p ${HOME} && \
+    chmod -R 777 ${HOME} && \
+    groupadd -r cypress && \
+    useradd -r -g cypress -d ${HOME} -s /sbin/nologin cypress && \
+    chown -R cypress:cypress ${HOME}
+
+# Create additional repo
+RUN echo '[Google-Chrome]' > /etc/yum.repos.d/google.repo && \
+    echo 'name=Google-Chrome' >> /etc/yum.repos.d/google.repo && \
+    echo 'baseurl=http://dl.google.com/linux/chrome/rpm/stable/$basearch' >> /etc/yum.repos.d/google.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/google.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/google.repo && \
+    echo 'gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub' >> /etc/yum.repos.d/google.repo && \
+    \
+    echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
+    echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8' >> /etc/yum.repos.d/epel8.repo && \
+    \
+    echo '[ol8-uekr6]' > /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 UEKR6' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-addons]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Addons' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/addons/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-baseos]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Baseos' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-appstream]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Appstream' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[almalinux-baseos]' > /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - BaseOS' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' && \
+    \
+    echo '[almalinux-appstream]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - AppStream' >>  /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \
+    echo '[almalinux-extras]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - Extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    dnf clean all && \
+    dnf -y update
+
+#Install packages
+RUN dnf module enable -y nodejs:${NODE_VERSION} && \
+    dnf install -y --setopt=tsflags=nodocs \
+    gcc-c++ git make unzip wget curl file \
+    nodejs maven java-${JAVA_VERSION}-openjdk-devel google-chrome-stable \
+    python${PYTHON_VERSION} python${PYTHON_VERSION}-devel python${PYTHON_VERSION}-pip \
+    dbus dbus-glib xorg-x11-server-Xvfb \
+    libicu \
+    libatomic \
+    libxslt \
+    woff2 \
+    libevent \
+    opus \
+    libwebp \
+    harfbuzz \
+    libjpeg-turbo \
+    enchant \
+    libsecret \
+    hyphen \
+    mesa-libEGL \
+    libgudev \
+    libffi \
+    libevdev \
+    mesa-libGLES && \
+    dnf install \
+    https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm \
+    https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm -y && \
+    dnf install x264-libs -y && \
+    ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
+    ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
+
+#Install cypress and dependencies
+RUN npm config set prefix /app && \
+    npm install -g --unsafe-perm --prefix /app \
+    cypress@latest \
+    @badeball/cypress-cucumber-preprocessor \
+    @bahmutov/cypress-esbuild-preprocessor \
+    @esbuild-plugins/node-modules-polyfill \
+    cy-verify-downloads \
+    cypress-on-fix \
+    esbuild \
+    esbuild-plugin-polyfill-node \
+    eslint-plugin-cypress \
+    lint-staged \
+    again \
+    colors \
+    config \
+    crypto-js \
+    cucumber-html-reporter \
+    cucumber-json-report-formatter \
+    cypress-file-upload \
+    cypress-wait-until \
+    dayjs \
+    eslint \
+    forever \
+    fs-extra \
+    gherkin \
+    gherkin-assembler \
+    gherkin-parse \
+    husky \
+    jwt-decode \
+    lodash \
+    mariadb \
+    minimist \
+    mocha \
+    mysql \
+    node-fetch \
+    path \
+    request \
+    soft-assert \
+    superagent \
+    superagent-retry \
+    supertest \
+    update-json-file \
+    xlsx \
+    zaproxy
+
+# Install Playwright
+RUN cd /app && \
+    npm install --no-save @playwright && \
+    npmx playwright install && \
+    chmod -R 777 ${HOME} /ms-playwright /opt || true
+
+# Set JAVA and DISPLAY
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk \
+    PATH="/usr/lib/jvm/java-17-openjdk/bin:${PATH}" \
+    DISPLAY=:99
+
+# Setup ChromeDriver
+RUN google-chrome --version && \
+    CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
+    curl -o chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip && \
+    unzip chromedriver-linux64.zip && \
+    mv chromedriver-linux64/chromedriver /usr/local/bin/ && \
+    chmod +x /usr/local/bin/chromedriver && \
+    rm -f chromedriver-linux64.zip && \
+    rm -rf chromedriver-linux64
+
+# Make all installed tools accessible to any user (including random UID)
+RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
+    dnf --setopt=tsflags=nodocs -y update && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/cache/yum && \
+    chmod -R 777 ${HOME} && \
+    java -version && \
+    node -v && \
+    npm -v && \
+    mvn -version && \
+    google-chrome --version && \
+    chromedriver --version && \
+    python --version && \
+    pip --version && \
+    cypress version || true
+
+# Reset user to non-root (for OpenShift)
+USER 1001
+WORKDIR ${HOME}
+CMD [ "bash" ]
