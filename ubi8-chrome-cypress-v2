@@ -158,6 +158,7 @@ RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
     dnf --setopt=tsflags=nodocs -y update && \
     dnf clean all && \
     rm -rf /var/cache/dnf /var/cache/yum && \
+    chown -R 1001:0 /app/.npm && \
     java -version && \
     node -v && \
     npm -v && \
