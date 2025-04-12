@@ -146,8 +146,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk \
 # Setup ChromeDriver
 RUN google-chrome --version && \
     CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
-    curl -o chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromed
-river-linux64.zip && \
+    curl -o chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip && \
     unzip chromedriver-linux64.zip && \
     mv chromedriver-linux64/chromedriver /usr/local/bin/ && \
     chmod +x /usr/local/bin/chromedriver && \
