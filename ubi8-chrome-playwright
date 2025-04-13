@@ -195,7 +195,7 @@ RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
     pip --version && \
     cd /app/bin && \
     ./playwright --version && \
-    ls -lart /app/.cache/
+    ls -lart .cache/ms-playwright
 
 # Reset user to non-root (for OpenShift)
 USER 1001
