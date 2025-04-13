@@ -5,7 +5,6 @@ USER root
 
 # Environment variables
 ENV NODE_VERSION=20 \
-    #NPM_VERSION=18.19.4 \
     PYTHON_VERSION=3.12 \
     JAVA_VERSION=17 \
     #HOME=/opt/app-root/src
@@ -17,9 +16,6 @@ RUN mkdir -p ${HOME} && \
     groupadd -r playwright && \
     useradd -r -g playwright -d ${HOME} -s /sbin/nologin playwright && \
     chown -R playwright:playwright ${HOME}
-#RUN mkdir -p ${HOME} && \
-#groupadd -r cypress && useradd -r -g cypress -d ${HOME} -s /sbin/nologin cypress && \
-#chown -R cypress:cypress ${HOME}
 
 RUN echo '[Google-Chrome]' > /etc/yum.repos.d/google.repo && \
     echo 'name=Google-Chrome' >> /etc/yum.repos.d/google.repo && \
