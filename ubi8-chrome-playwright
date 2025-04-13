@@ -113,7 +113,7 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm \
     https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm -y && \
     dnf install x264-libs -y && \
-    dnf update && \
+    dnf update -y && \
     dnf -y install \
     xorg-x11-server-Xvfb \
     libXcomposite \
