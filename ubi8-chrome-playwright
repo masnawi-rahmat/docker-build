@@ -135,8 +135,7 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     dbus-glib \
     libXt \
     pango \
-    xdg-utils \
-    libicu && \
+    xdg-utils && \
     ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
     ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
 
