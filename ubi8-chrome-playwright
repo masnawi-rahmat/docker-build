@@ -118,7 +118,8 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
 RUN npm config set prefix ${HOME} && \
     npm install -g --unsafe-perm --prefix ${HOME} \
     npm install --no-save @playwright/test && \
-    npx playwright install && \
+    # npx playwright install && \
+    npx playwright install --with-deps && \
     chmod -R 777 ${HOME} /ms-playwright /opt || true
 
 # Set JAVA and DISPLAY
