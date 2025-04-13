@@ -118,7 +118,6 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     xorg-x11-server-Xvfb \
     libXcomposite \
     libXcursor \
-    flite \
     pcre \
     libXdamage \
     libXext \
