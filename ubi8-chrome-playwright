@@ -106,6 +106,8 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     libgudev \
     libffi \
     libevdev \
+    harfbuzz-icu \
+    enchant2 \
     mesa-libGLES && \
     dnf install \
     https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm \
