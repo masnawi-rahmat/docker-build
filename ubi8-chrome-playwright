@@ -113,6 +113,12 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
     ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
 
+# Install ICU version
+RUN curl -L -o libicu.tar.gz https://github.com/unicode-org/icu/releases/download/release-66-1/icu4c-66_1-RHEL8-x64.tar.gz && \
+    tar -xzf libicu.tar.gz && \
+    cp -P icu4c-66_1-RHEL8-x64/lib/libicu*.so* /usr/lib64/ && \
+    rm -rf libicu.tar.gz icu4c-66_1-RHEL8-x64
+
 # Install Playwright
 RUN npm config set prefix ${HOME} && \
     npm install -g --unsafe-perm --prefix ${HOME} \
@@ -140,7 +146,7 @@ RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
     dnf --setopt=tsflags=nodocs -y update && \
     dnf clean all && \
     rm -rf /var/cache/dnf /var/cache/yum && \
-    chmod -R 777 ${HOME} && \
+    chmod -R 777 ${HOME} /usr/lib64 && \
     java -version && \
     node -v && \
     npm -v && \
