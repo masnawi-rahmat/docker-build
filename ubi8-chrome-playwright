@@ -149,6 +149,16 @@ RUN google-chrome --version && \
     rm -f chromedriver-linux64.zip && \
     rm -rf chromedriver-linux64
 
+# Setup symlinks for broken libs  
+RUN ln -s /usr/lib64/libicuuc.so.60.3 /usr/lib64/libicuuc.so.66 && \
+    ln -s /usr/lib64/libicudata.so.60.3 /usr/lib64/libicudata.so.66 && \
+    ln -s /usr/lib64/libicui18n.so.60.3 /usr/lib64/libicui18n.so.66 && \
+    ln -s /usr/lib64/libevent-2.1.so.6 /usr/lib64/libevent-2.1.so.7 && \
+    ln -s /usr/lib64/libjpeg.so.62 /usr/lib64/libjpeg.so.8 && \
+    ln -s /usr/lib64/libwebp.so.7 /usr/lib64/libwebp.so.6 && \
+    ln -s /usr/lib64/libffi.so.6 /usr/lib64/libffi.so.7 && \
+    chmod -R 77 /usr/lib64
+
 # Install Playwright
 RUN npm config set prefix ${HOME} && \
     npm install -g --unsafe-perm --prefix ${HOME} \
