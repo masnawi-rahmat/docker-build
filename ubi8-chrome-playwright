@@ -149,7 +149,7 @@ RUN google-chrome --version && \
     rm -f chromedriver-linux64.zip && \
     rm -rf chromedriver-linux64
 
-# Setup symlinks for broken libs  
+# Force symlinks for broken libs  
 RUN ln -s /usr/lib64/libicuuc.so.60.3 /usr/lib64/libicuuc.so.66 && \
     ln -s /usr/lib64/libicudata.so.60.3 /usr/lib64/libicudata.so.66 && \
     ln -s /usr/lib64/libicui18n.so.60.3 /usr/lib64/libicui18n.so.66 && \
