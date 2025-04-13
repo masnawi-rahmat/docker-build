@@ -126,7 +126,6 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     libXtst \
     cups-libs \
     gtk3 \
-    #ipa-gothic-fonts \
     libdrm \
     libxshmfence \
     alsa-lib \
@@ -134,11 +133,6 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     at-spi2-core \
     cairo \
     dbus-glib \
-    #libicu66 \
-    #libevent-2.1-7 \
-    #libjpeg8 \
-    #libwebp6 \
-    #libffi7 \
     libXt \
     pango \
     xdg-utils && \
