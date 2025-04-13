@@ -90,7 +90,7 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     python${PYTHON_VERSION} python${PYTHON_VERSION}-devel python${PYTHON_VERSION}-pip \
     dbus dbus-glib xorg-x11-server-Xvfb \
     libicu \
-    libicu-devel
+    libicu-devel \
     libatomic \
     libxslt \
     woff2 \
