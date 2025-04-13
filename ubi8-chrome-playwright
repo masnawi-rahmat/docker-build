@@ -193,7 +193,9 @@ RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
     chromedriver --version && \
     python --version && \
     pip --version && \
-    npmx playwright --version || true
+    cd /app/bin && \
+    ./playwright --version && \
+    ls -lart /app/.cache/
 
 # Reset user to non-root (for OpenShift)
 USER 1001
