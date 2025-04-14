@@ -1,1 +1,195 @@
 
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Always use root for setup
+USER root
+
+# Environment variables
+ENV NODE_VERSION=20 \
+    PYTHON_VERSION=3.12 \
+    JAVA_VERSION=17 \
+    #HOME=/opt/app-root/src
+    HOME=/app
+
+# Create non-root user and necessary directories
+RUN mkdir -p ${HOME} && \
+    chmod -R 777 ${HOME} && \
+    groupadd -r playwright && \
+    useradd -r -g playwright -d ${HOME} -s /sbin/nologin playwright && \
+    chown -R playwright:playwright ${HOME}
+
+RUN echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
+    echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8' >> /etc/yum.repos.d/epel8.repo && \
+    \
+    echo '[ol8-uekr6]' > /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 UEKR6' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-addons]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Addons' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/addons/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-baseos]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Baseos' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-appstream]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Appstream' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[almalinux-baseos]' > /etc/yum.repos.d/almalinux.repo && \ 
+    echo 'name=AlmaLinux $releasever - BaseOS' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' && \
+    \
+    echo '[almalinux-appstream]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - AppStream' >>  /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \   
+    echo '[almalinux-extras]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - Extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    dnf clean all && \
+    dnf -y update
+
+#Install packages
+RUN dnf module enable -y nodejs:${NODE_VERSION} && \
+    dnf install -y --setopt=tsflags=nodocs \
+    gcc-c++ git make unzip wget curl file \
+    nodejs maven java-${JAVA_VERSION}-openjdk-devel \
+    python${PYTHON_VERSION} python${PYTHON_VERSION}-devel python${PYTHON_VERSION}-pip \
+    dbus dbus-glib xorg-x11-server-Xvfb \
+    libicu \
+    libicu-devel \
+    libatomic \
+    libxslt \
+    woff2 \
+    libevent \
+    opus \
+    libwebp \
+    harfbuzz \
+    libjpeg-turbo \
+    enchant \
+    libsecret \
+    hyphen \
+    mesa-libEGL \
+    libgudev \
+    libffi \
+    libevdev \
+    harfbuzz-icu \
+    enchant2 \
+    mesa-libGLES && \
+    dnf install \
+    https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm \
+    https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm -y && \
+    dnf install x264-libs -y && \
+    dnf update -y && \
+    dnf -y install \
+    xorg-x11-server-Xvfb \
+    libXcomposite \
+    libXcursor \
+    pcre \
+    libXdamage \
+    libXext \
+    libXi \
+    libXrandr \
+    libXrender \
+    libXtst \
+    cups-libs \
+    gtk3 \
+    libdrm \
+    libxshmfence \
+    alsa-lib \
+    at-spi2-atk \
+    at-spi2-core \
+    cairo \
+    dbus-glib \
+    libXt \
+    pango \
+    xdg-utils && \
+    ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
+    ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
+
+# Add the Microsoft Edge repository
+RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
+    install -o root -g root -m 644 microsoft.gpg /etc/pki/rpm-gpg/ && \
+    rm -f microsoft.gpg && \
+    curl -sSL -o /etc/yum.repos.d/microsoft-edge.repo https://packages.microsoft.com/yumrepos/edge
+
+# Install Microsoft Edge (stable version)
+RUN dnf install -y microsoft-edge-stable && dnf clean all
+
+# Force symlinks for broken libs  
+RUN ln -s /usr/lib64/libicuuc.so.60.3 /usr/lib64/libicuuc.so.66 && \
+    ln -s /usr/lib64/libicudata.so.60.3 /usr/lib64/libicudata.so.66 && \
+    ln -s /usr/lib64/libicui18n.so.60.3 /usr/lib64/libicui18n.so.66 && \
+    ln -s /usr/lib64/libevent-2.1.so.6 /usr/lib64/libevent-2.1.so.7 && \
+    ln -s /usr/lib64/libjpeg.so.62 /usr/lib64/libjpeg.so.8 && \
+    ln -s /usr/lib64/libwebp.so.7 /usr/lib64/libwebp.so.6 && \
+    ln -s /usr/lib64/libffi.so.6 /usr/lib64/libffi.so.7 && \
+    chmod -R 77 /usr/lib64
+
+# Install Playwright
+RUN npm config set prefix ${HOME} && \
+    npm install -g --unsafe-perm --prefix ${HOME} \
+    npm install --no-save @playwright/test && \
+    npx playwright install && \
+    chmod -R 777 ${HOME} /ms-playwright /opt || true
+#RUN npm config set prefix ${HOME} && \
+    #npm install -g --unsafe-perm --prefix ${HOME} \
+    #npm install --no-save @playwright/test && \
+    #npx playwright install-deps && \
+    #npx playwright install && \
+    #chmod -R 777 ${HOME} /ms-playwright /opt || true
+
+# Set JAVA and DISPLAY
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk \
+    PATH="/usr/lib/jvm/java-17-openjdk/bin:${PATH}" \    
+    DISPLAY=:99
+
+# Make all installed tools accessible to any user (including random UID)
+RUN chmod -R go+rX /usr/local /opt /usr/lib /usr/bin /usr/share && \
+    dnf --setopt=tsflags=nodocs -y update && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /var/cache/yum && \
+    chmod -R 777 ${HOME} /usr/lib64 && \
+    java -version && \
+    node -v && \
+    npm -v && \
+    mvn -version && \
+    google-chrome --version && \
+    chromedriver --version && \
+    python --version && \
+    pip --version && \
+    cd /app && \
+    ./bin/playwright --version && \
+    ls -lart .cache/ms-playwright
+
+# Reset user to non-root (for OpenShift)
+USER 1001
+WORKDIR ${HOME}
+CMD [ "bash" ]
