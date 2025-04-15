@@ -160,7 +160,8 @@ priority=1" > /etc/yum.repos.d/microsoft-edge.repo
 RUN dnf clean all && \
     dnf makecache && \
     dnf install -y microsoft-edge-stable && \
-    dnf clean all
+    dnf clean all && \
+    chmod -R 777 /opt/microsoft /usr/bin/microsoft-edge || true
 
 # Setup ChromeDriver
 RUN google-chrome --version && \
