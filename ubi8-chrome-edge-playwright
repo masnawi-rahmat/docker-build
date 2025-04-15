@@ -141,14 +141,26 @@ RUN dnf module enable -y nodejs:${NODE_VERSION} && \
     ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
     ln -sf /usr/bin/pip${PYTHON_VERSION} /usr/bin/pip
 
-# Add the Microsoft Edge repository
-RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
-    install -o root -g root -m 644 microsoft.gpg /etc/pki/rpm-gpg/ && \
-    rm -f microsoft.gpg && \
-    curl -sSL -o /etc/yum.repos.d/microsoft-edge.repo https://packages.microsoft.com/yumrepos/edge
+# Import Microsoft GPG key
+RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg2 --dearmor > microsoft.gpg && \
+    mv microsoft.gpg /etc/pki/rpm-gpg/MICROSOFT-GPG-KEY
 
-# Install Microsoft Edge (stable version)
-RUN dnf install -y microsoft-edge-stable && dnf clean all
+# Add Microsoft Edge repo manually
+RUN echo -e "[microsoft-edge]\n\
+name=Microsoft Edge\n\
+baseurl=https://packages.microsoft.com/yumrepos/edge\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=file:///etc/pki/rpm-gpg/MICROSOFT-GPG-KEY\n\
+repo_gpgcheck=0\n\
+enabled=1\n\
+priority=1" > /etc/yum.repos.d/microsoft-edge.repo
+
+# Clean metadata & install Edge
+RUN dnf clean all && \
+    dnf makecache && \
+    dnf install -y microsoft-edge-stable && \
+    dnf clean all
 
 # Setup ChromeDriver
 RUN google-chrome --version && \
