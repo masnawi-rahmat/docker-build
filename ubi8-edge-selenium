@@ -1,0 +1,148 @@
+# Start with UBI 8 base image
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Create app directory
+RUN mkdir -p /app && \
+    chmod -R 777 /app
+
+# Set working directory
+WORKDIR /app
+
+# Set repos
+RUN echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
+    echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8' >> /etc/yum.repos.d/epel8.repo && \
+    \
+    echo '[ol8-uekr6]' > /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 UEKR6' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-addons]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Addons' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/addons/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-baseos]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Baseos' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-appstream]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Appstream' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[almalinux-baseos]' > /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - BaseOS' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' && \
+    \
+    echo '[almalinux-appstream]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - AppStream' >>  /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \
+    echo '[almalinux-extras]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - Extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    dnf clean all && \
+    dnf -y update
+
+# Install necessary dependencies
+RUN dnf install -y \
+    wget \
+    unzip \
+    shadow-utils \
+    xorg-x11-server-Xvfb \
+    libXScrnSaver \
+    gtk3 \
+    alsa-lib \
+    libdrm \
+    mesa-libgbm \
+    nss \
+    libXcomposite \
+    libXdamage \
+    libXrandr \
+    atk \
+    at-spi2-atk \
+    cups-libs \
+    pango \
+    libxkbcommon \
+    libnotify \
+    && dnf clean all
+
+# Install Microsoft repository keys and add the Edge repo
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+    dnf config-manager --add-repo https://packages.microsoft.com/yumrepos/edge
+
+# Install Microsoft Edge normally, then move to /app directory
+RUN dnf -v install -y microsoft-edge-stable && \
+    mkdir -p /app/usr/bin && \
+    chmod -R 777 /app/usr/bin && \
+    chmod -R 777 /usr/bin/microsoft-edge && \
+    cp -a /usr/bin/microsoft-edge* /app/usr/bin/ && \
+    mkdir -p /app/opt && \
+    chmod -R 777 /app/opt && \
+    chmod -R 777 /opt/microsoft && \
+    cp -a /opt/microsoft* /app/opt/ && \
+    dnf clean all
+
+# Make sure Edge binary is accessible in PATH
+ENV PATH="/app/usr/bin:${PATH}"
+
+# Get the Edge Driver version that matches the installed Edge version
+RUN EDGE_VERSION=$(/app/usr/bin/microsoft-edge --version | awk '{print $3}') && \
+    wget -q "https://msedgewebdriverstorage.blob.core.windows.net/edgewebdriver/${EDGE_VERSION}/edgedriver_linux64.zip" -O /tmp/edgedriver.zip && \
+    unzip /tmp/edgedriver.zip -d /tmp/ && \
+    mv /tmp/msedgedriver /app/usr/bin/msedgedriver && \
+    chmod +x /app/usr/bin/msedgedriver && \
+    rm /tmp/edgedriver.zip
+
+# Install Python and pip
+RUN dnf install -y python3 python3-pip && dnf clean all
+
+# Install Selenium in /app directory
+RUN pip3 install --target=/app/python selenium pytest pytest-xdist
+
+# Add the Python packages to PYTHONPATH
+ENV PYTHONPATH="/app/python:${PYTHONPATH}"
+
+# Set up display for headless running
+ENV DISPLAY=:99
+
+# Clean cache
+RUN dnf clean all && \
+rm -rf /var/cache/dnf /var/cache/yum || true
+
+# Set up a non-root user for running tests
+#RUN useradd -m testuser
+#USER testuser
+#RUN mkdir -p /home/testuser
+#WORKDIR /app
+
+# Create a startup script
+#USER root
+#RUN echo '#!/bin/bash\nXvfb :99 -screen 0 1280x1024x24 &\nexec "$@"' > /entrypoint.sh && \
+    #chmod +x /entrypoint.sh
+
+#ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/bin/bash"]
