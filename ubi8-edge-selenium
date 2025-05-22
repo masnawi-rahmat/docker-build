@@ -121,7 +121,11 @@ RUN EDGE_VERSION=$(/app/usr/bin/microsoft-edge --version | awk '{print $3}') && 
 RUN dnf install -y python3 python3-pip && dnf clean all
 
 # Install Selenium in /app directory
-RUN pip3 install --target=/app/python selenium pytest pytest-xdist
+RUN pip3 install --target=/app/python \
+    selenium pytest pytest-xdist \
+    "requests==2.25.1" \
+    "urllib3<1.27" \
+    "chardet>=3.0.2,<5"
 
 # Add the Python packages to PYTHONPATH
 ENV PYTHONPATH="/app/python:${PYTHONPATH}"
