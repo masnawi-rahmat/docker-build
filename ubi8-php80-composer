@@ -1,0 +1,11 @@
+FROM registry.redhat.io/ubi8/ubi:latest
+
+RUN dnf -y module reset php && \
+    dnf -y module enable php:8.0 && \
+    dnf -y install php php-cli php-mbstring php-xml php-pdo curl unzip git && \
+    dnf clean all
+
+# Install Composer from official site
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+#CMD ["php", "-v"]
