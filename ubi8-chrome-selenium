@@ -1,0 +1,152 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Always use root for setup
+USER root
+
+RUN echo '[google-chrome]' > /etc/yum.repos.d/google-chrome.repo && \
+    echo 'name=google-chrome' >> /etc/yum.repos.d/google-chrome.repo && \
+    echo 'baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64' >> /etc/yum.repos.d/google-chrome.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/google-chrome.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/google-chrome.repo && \
+    echo 'gpgkey=https://dl.google.com/linux/linux_signing_key.pub' >> /etc/yum.repos.d/google-chrome.repo && \
+    \
+    echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
+    echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8' >> /etc/yum.repos.d/epel8.repo && \
+    \
+    echo '[ol8-uekr6]' > /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 UEKR6' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-addons]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Addons' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/addons/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-baseos]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Baseos' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-appstream]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Appstream' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[almalinux-baseos]' > /etc/yum.repos.d/almalinux.repo && \ 
+    echo 'name=AlmaLinux $releasever - BaseOS' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' && \
+    \
+    echo '[almalinux-appstream]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - AppStream' >>  /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \   
+    echo '[almalinux-extras]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - Extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    dnf clean all && \
+    dnf -y update
+
+# -------------------------------------------------------------
+# Custom UBI8 with Selenium 4.19.0, OpenJDK 21, Python 3.9.20, Maven 3.8.5, and Chrome
+# -------------------------------------------------------------
+# FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Install system tools and dependencies
+RUN dnf install -y dnf-utils unzip wget git tar curl file gcc-c++ make \
+    dbus dbus-glib xorg-x11-server-Xvfb libsoup libxml2 expat libtasn1 \
+    libtiff freetype cups gnutls libjpeg-turbo \
+    && dnf clean all
+
+# -------------------------------------------------------------
+# Install OpenJDK 21
+# -------------------------------------------------------------
+RUN dnf install -y java-21-openjdk java-21-openjdk-devel \
+    && dnf clean all
+
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# -------------------------------------------------------------
+# Install Python 3.9.20 from source
+# -------------------------------------------------------------
+RUN dnf module install -y python39 \ 
+    && dnf install -y python39-pip \
+    && dnf clean all
+
+#WORKDIR /tmp
+#RUN dnf install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel make \
+    #&& curl -sSLO https://www.python.org/ftp/python/3.9.20/Python-3.9.20.tgz \
+    #&& tar -xzf Python-3.9.20.tgz \
+    #&& cd Python-3.9.20 \
+    #&& ./configure --enable-optimizations \
+    #&& make altinstall \
+    #&& ln -s /usr/local/bin/python3.9 /usr/bin/python3 \
+    #&& ln -s /usr/local/bin/pip3.9 /usr/bin/pip3 \
+    #&& dnf remove -y gcc make \
+    #&& dnf clean all \
+    #&& rm -rf /tmp/*
+
+# -------------------------------------------------------------
+# Install Maven 3.8.5
+# -------------------------------------------------------------
+RUN dnf module install -y maven:3.8 \
+    && dnf clean all
+
+#RUN curl -sSL https://archive.apache.org/dist/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz -o /tmp/maven.tar.gz \
+    #&& tar -xzf /tmp/maven.tar.gz -C /opt \
+    #&& ln -s /opt/apache-maven-3.8.5 /opt/maven \
+    #&& rm -f /tmp/maven.tar.gz
+
+ENV MAVEN_HOME=/opt/maven
+ENV PATH=$MAVEN_HOME/bin:$PATH
+
+# -------------------------------------------------------------
+# Install Google Chrome (stable channel)
+# -------------------------------------------------------------
+RUN dnf install -y google-chrome-stable \
+    && dnf clean all
+
+# -------------------------------------------------------------
+# Install Selenium 4.19.0
+# -------------------------------------------------------------
+RUN pip3 install selenium==4.19.0
+
+# Optional: Install ChromeDriver to match Chrome version
+RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
+    MAJOR=$(echo $CHROME_VERSION | cut -d'.' -f1) && \
+    DRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$MAJOR") && \
+    curl -sSLo /tmp/chromedriver.zip "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$DRIVER_VERSION/linux64/chromedriver-linux64.zip" && \
+    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+    mv /usr/local/bin/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
+    chmod +x /usr/local/bin/chromedriver && \
+    rm -rf /tmp/*
+
+# -------------------------------------------------------------
+# Environment setup
+# -------------------------------------------------------------
+ENV PATH="/usr/local/bin:$PATH"
+
+#WORKDIR /app
+CMD ["bash"]
