@@ -1,0 +1,141 @@
+FROM quay.io/centos/centos:stream8 AS builder
+
+# Fix repos to vault
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/*.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/*.repo
+
+# Install virtualization and image tools
+RUN dnf -y install \
+    qemu-kvm \
+    # virt-install \
+    virt-viewer \
+    tree \
+    libvirt \
+    qemu-img \
+    cloud-init \
+    genisoimage && \
+    dnf clean all
+
+# Collect dependencies
+RUN mkdir -p /deps && \
+    for bin in /usr/libexec/qemu-kvm \
+               /usr/bin/virt-install \
+               # /usr/bin/virt-viewer \
+               /usr/bin/tree \
+               /usr/bin/qemu-img \
+               /usr/bin/genisoimage \
+               /usr/bin/cloud-init; do \
+      if [ -f "$bin" ]; then \
+        ldd $bin | awk '{print $3}' | grep '^/' | xargs -I '{}' cp -v '{}' /deps/ || true; \
+      fi; \
+    done
+
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Copy binaries
+COPY --from=builder /usr/libexec/qemu-kvm /usr/bin/
+# COPY --from=builder /usr/bin/virt-install /usr/bin/
+COPY --from=builder /usr/bin/virt-viewer /usr/bin/
+COPY --from=builder /usr/bin/tree /usr/bin/
+COPY --from=builder /usr/bin/qemu-img /usr/bin/
+COPY --from=builder /usr/bin/genisoimage /usr/bin/
+COPY --from=builder /usr/bin/cloud-init /usr/bin/
+
+# Copy detected libraries
+COPY --from=builder /deps/ /usr/lib64/
+
+# Copy support directories
+COPY --from=builder /usr/share/qemu /usr/share/qemu
+COPY --from=builder /etc/libvirt /etc/libvirt
+
+# LABEL maintainer="Masnawi Rahmat"
+# LABEL description="UBI8 VM Builder with Packer, Vagrant, Ansible and QEMU"
+
+ENV LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    PACKER_VERSION=1.11.0 \
+    VAGRANT_VERSION=2.4.7
+
+# Base packages
+RUN dnf -y update && \
+    dnf -y install git \
+    wget \
+    curl \
+    unzip \
+    tar \
+    gzip \
+    zip \
+    which \
+    jq \
+    vim \
+    nano \
+    make \
+    gcc \
+    gcc-c++ \
+    openssh-clients \
+    openssh-server \
+    rsync \
+    sudo \
+    hostname \
+    iproute \
+    net-tools \
+    bind-utils \
+    procps-ng \
+    glibc-langpack-en \
+    python3.11 \
+    python3.11-pip && \
+    dnf clean all
+
+# Install Ansible and Virt-Install
+RUN python3.11 -m pip install --no-cache-dir ansible jmespath
+
+# Copy virt-install script itself
+# COPY --from=builder /usr/bin/virt-install /usr/bin/
+
+# Copy its Python modules from CentOS Stream’s site-packages into UBI’s Python 3.11 site-packages
+# COPY --from=builder /usr/lib/python3.6/site-packages/virtinst* /usr/lib/python3.11/site-packages/
+# COPY --from=builder /usr/lib/python3.6/site-packages/libvirt* /usr/lib/python3.11/site-packages/
+# COPY --from=builder /usr/lib/python3.6/site-packages/gi* /usr/lib/python3.11/site-packages/
+# COPY --from=builder /usr/lib/python3.6/site-packages/ /usr/lib/python3.11/site-packages/
+
+# Install Packer
+# RUN curl -L -o /tmp/packer.zip \
+    # https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip && \
+    # unzip /tmp/packer.zip -d /usr/local/bin && \
+    # chmod +x /usr/local/bin/packer && \
+    # rm -f /tmp/packer.zip
+RUN wget -O /tmp/packer.zip \
+    https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip && \
+    unzip /tmp/packer.zip -d /usr/local/bin && \
+    chmod +x /usr/local/bin/packer && \
+    rm -f /tmp/packer.zip
+
+# Install Vagrant
+# RUN curl -L -o /tmp/vagrant.rpm \
+    # https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant-${VAGRANT_VERSION}-1.x86_64.rpm \
+    # && dnf install -y /tmp/vagrant.rpm \
+    # && rm -f /tmp/vagrant.rpm
+RUN wget -O /tmp/vagrant.rpm \
+    https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant-${VAGRANT_VERSION}-1.x86_64.rpm && \
+    dnf install -y /tmp/vagrant.rpm && \
+    rm -f /tmp/vagrant.rpm
+
+# Install common Vagrant plugins
+RUN vagrant plugin install vagrant-libvirt || true
+
+# Workspace
+RUN mkdir -p \
+    /workspace \
+    /workspace/output \
+    /workspace/packer \
+    /workspace/ansible \
+    /workspace/vagrant
+
+WORKDIR /workspace
+
+RUN qemu-img --version
+RUN vagrant --version
+# RUN python3.11 -c "import virtinst, libvirt; print('Modules OK')"
+# RUN virt-install --version
+
+CMD ["/bin/bash"]
