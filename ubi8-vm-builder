@@ -1,129 +1,175 @@
-FROM quay.io/centos/centos:stream8 AS builder
-
-# Fix repos to vault
-RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/*.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/*.repo
-
-# Install virtualization and image tools
-RUN dnf -y install \
-    qemu-kvm \
-    # virt-install \
-    virt-viewer \
-    tree \
-    libvirt \
-    qemu-img \
-    cloud-init \
-    genisoimage && \
-    dnf clean all
-
-# Collect dependencies
-RUN mkdir -p /deps && \
-    for bin in /usr/libexec/qemu-kvm \
-               /usr/bin/virt-install \
-               # /usr/bin/virt-viewer \
-               /usr/bin/tree \
-               /usr/bin/qemu-img \
-               /usr/bin/genisoimage \
-               /usr/bin/cloud-init; do \
-      if [ -f "$bin" ]; then \
-        ldd $bin | awk '{print $3}' | grep '^/' | xargs -I '{}' cp -v '{}' /deps/ || true; \
-      fi; \
-    done
-
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
-# Copy binaries
-COPY --from=builder /usr/libexec/qemu-kvm /usr/bin/
-# COPY --from=builder /usr/bin/virt-install /usr/bin/
-COPY --from=builder /usr/bin/virt-viewer /usr/bin/
-COPY --from=builder /usr/bin/tree /usr/bin/
-COPY --from=builder /usr/bin/qemu-img /usr/bin/
-COPY --from=builder /usr/bin/genisoimage /usr/bin/
-COPY --from=builder /usr/bin/cloud-init /usr/bin/
+RUN echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
+    echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/epel8.repo && \
+    echo 'gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8' >> /etc/yum.repos.d/epel8.repo && \
+    \
+    echo '[ol8-uekr6]' > /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 UEKR6' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-addons]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Addons' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/addons/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-baseos]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Baseos' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/baseos/latest/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[ol8-appstream]' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'name=Oracle 8 Appstream' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'baseurl=https://yum.oracle.com/repo/OracleLinux/OL8/appstream/x86_64/' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/oracle8.repo && \
+    echo 'gpgkey=https://yum.oracle.com/RPM-GPG-KEY-oracle-ol8' >> /etc/yum.repos.d/oracle8.repo && \
+    \
+    echo '[almalinux-baseos]' > /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - BaseOS' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' && \
+    \
+    echo '[almalinux-appstream]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - AppStream' >>  /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \
+    echo '[almalinux-extras]' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'name=AlmaLinux $releasever - Extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/almalinux.repo && \
+    echo 'gpgkey=https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux' >> /etc/yum.repos.d/almalinux.repo && \
+    \    
+    echo '[centos-vault-baseos]' > /etc/yum.repos.d/centos-vault.repo && \
+    echo 'name=CentOS Vault BaseOS' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'baseurl=http://vault.centos.org/8.5.2111/BaseOS/$basearch/os/' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/centos-vault.repo && \
+    \
+    echo '[centos-vault-appstream]' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'name=CentOS Vault AppStream' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'baseurl=http://vault.centos.org/8.5.2111/AppStream/$basearch/os/' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/centos-vault.repo && \
+    \
+    echo '[centos-vault-extras]' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'name=CentOS Vault Extras' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'baseurl=http://vault.centos.org/8.5.2111/extras/$basearch/os/' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'enabled=1' >> /etc/yum.repos.d/centos-vault.repo && \
+    echo 'gpgcheck=0' >> /etc/yum.repos.d/centos-vault.repo && \
+    \
+    echo '[fedora]' > /etc/yum.repos.d/fedora.repo && \
+    echo 'name=Fedora $releasever - $basearch' >> /etc/yum.repos.d/fedora.repo && \
+    echo 'baseurl=https://download.fedoraproject.org/pub/fedora/linux/releases/41/Everything/$basearch/os/' >> /etc/yum.repos.d/fedora.repo && \
+    echo 'enabled=0' >> /etc/yum.repos.d/fedora.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/fedora.repo && \
+    echo 'gpgkey=https://getfedora.org/static/fedora.gpg' >> /etc/yum.repos.d/fedora.repo && \
+    \
+    echo '[fedora-archive]' > /etc/yum.repos.d/fedora-archive.repo && \
+    echo 'name=Fedora Archive $releasever - $basearch' >> /etc/yum.repos.d/fedora-archive.repo && \
+    echo 'baseurl=https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/40/Everything/$basearch/os/' >> /etc/yum.repos.d/fedora-archive.repo && \
+    echo 'enabled=0' >> /etc/yum.repos.d/fedora-archive.repo && \
+    echo 'gpgcheck=1' >> /etc/yum.repos.d/fedora-archive.repo && \
+    echo 'gpgkey=https://getfedora.org/static/fedora.gpg' >> /etc/yum.repos.d/fedora-archive.repo
 
-# Copy detected libraries
-COPY --from=builder /deps/ /usr/lib64/
+RUN dnf makecache && \
+dnf update -y \
+--disablerepo=fedora,fedora-archive
 
-# Copy support directories
-COPY --from=builder /usr/share/qemu /usr/share/qemu
-COPY --from=builder /etc/libvirt /etc/libvirt
-
-# LABEL maintainer="Masnawi Rahmat"
-# LABEL description="UBI8 VM Builder with Packer, Vagrant, Ansible and QEMU"
-
-ENV LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8 \
-    PACKER_VERSION=1.11.0 \
-    VAGRANT_VERSION=2.4.7
-
-# Base packages
-RUN dnf -y update && \
-    dnf -y install git \
+RUN dnf -y install --allowerasing --skip-broken --nobest --disablerepo=fedora,fedora-archive \
+    git \
     wget \
     curl \
+    jq \
+    tree \
+    vim \
+    nano \
+    make \
+    gcc \
+    gcc-c++
+
+RUN dnf -y install --disablerepo=fedora,fedora-archive \
+    git \
+    wget \
+    curl \
+    jq \
+    tree \
+    vim \
+    nano \
+    make \
+    gcc \
+    gcc-c++
+
+RUN dnf -y install --disablerepo=fedora,fedora-archive \
     unzip \
     tar \
     gzip \
     zip \
     which \
     jq \
-    vim \
-    nano \
-    make \
-    gcc \
-    gcc-c++ \
-    openssh-clients \
-    openssh-server \
-    rsync \
-    sudo \
-    hostname \
-    iproute \
-    net-tools \
-    bind-utils \
-    procps-ng \
-    glibc-langpack-en \
     python3.11 \
-    python3.11-pip && \
-    dnf clean all
+    python3.11-pip
 
-# Install Ansible and Virt-Install
+RUN dnf -y install \
+    --disablerepo="*" \
+    --enablerepo=ol8-baseos \
+    --enablerepo=ol8-appstream \
+    qemu-kvm
+
+RUN dnf -y install \
+    --disablerepo=fedora,fedora-archive \
+    libvirt \
+    virt-viewer \
+    qemu-img \
+    cloud-init
+
+RUN dnf -y install \
+    --disablerepo=fedora,fedora-archive \
+    genisoimage \
+    seabios \
+    edk2-ovmf
+          
+RUN dnf makecache && \
+dnf update -y \
+    --disablerepo=fedora,fedora-archive && \
+dnf clean all
+
 RUN python3.11 -m pip install --no-cache-dir ansible jmespath
 
-# Copy virt-install script itself
-# COPY --from=builder /usr/bin/virt-install /usr/bin/
+ENV LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    PACKER_VERSION=1.11.0 \
+    VAGRANT_VERSION=2.4.7
 
-# Copy its Python modules from CentOS Stream’s site-packages into UBI’s Python 3.11 site-packages
-# COPY --from=builder /usr/lib/python3.6/site-packages/virtinst* /usr/lib/python3.11/site-packages/
-# COPY --from=builder /usr/lib/python3.6/site-packages/libvirt* /usr/lib/python3.11/site-packages/
-# COPY --from=builder /usr/lib/python3.6/site-packages/gi* /usr/lib/python3.11/site-packages/
-# COPY --from=builder /usr/lib/python3.6/site-packages/ /usr/lib/python3.11/site-packages/
-
-# Install Packer
-# RUN curl -L -o /tmp/packer.zip \
-    # https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip && \
-    # unzip /tmp/packer.zip -d /usr/local/bin && \
-    # chmod +x /usr/local/bin/packer && \
-    # rm -f /tmp/packer.zip
 RUN wget -O /tmp/packer.zip \
     https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip && \
     unzip /tmp/packer.zip -d /usr/local/bin && \
     chmod +x /usr/local/bin/packer && \
     rm -f /tmp/packer.zip
 
-# Install Vagrant
-# RUN curl -L -o /tmp/vagrant.rpm \
-    # https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant-${VAGRANT_VERSION}-1.x86_64.rpm \
-    # && dnf install -y /tmp/vagrant.rpm \
-    # && rm -f /tmp/vagrant.rpm
 RUN wget -O /tmp/vagrant.rpm \
     https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant-${VAGRANT_VERSION}-1.x86_64.rpm && \
     dnf install -y /tmp/vagrant.rpm && \
     rm -f /tmp/vagrant.rpm
 
-# Install common Vagrant plugins
 RUN vagrant plugin install vagrant-libvirt || true
 
-# Workspace
 RUN mkdir -p \
     /workspace \
     /workspace/output \
@@ -135,7 +181,5 @@ WORKDIR /workspace
 
 RUN qemu-img --version
 RUN vagrant --version
-# RUN python3.11 -c "import virtinst, libvirt; print('Modules OK')"
-# RUN virt-install --version
 
 CMD ["/bin/bash"]
