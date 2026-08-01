@@ -1,5 +1,8 @@
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
+LABEL maintainer="Masnawi Rahmat"
+LABEL description="UBI8 VM Builder with Packer, Vagrant, Ansible and QEMU"
+
 RUN echo '[epel8]' > /etc/yum.repos.d/epel8.repo && \
     echo 'name=EPEL 8' >> /etc/yum.repos.d/epel8.repo && \
     echo 'baseurl=https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/' >> /etc/yum.repos.d/epel8.repo && \
