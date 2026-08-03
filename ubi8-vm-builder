@@ -95,18 +95,6 @@ RUN dnf makecache && \
 dnf update -y \
 --disablerepo=fedora,fedora-archive
 
-RUN dnf -y install --allowerasing --skip-broken --nobest --disablerepo=fedora,fedora-archive \
-    git \
-    wget \
-    curl \
-    jq \
-    tree \
-    vim \
-    nano \
-    make \
-    gcc \
-    gcc-c++
-
 RUN dnf -y install --disablerepo=fedora,fedora-archive \
     git \
     wget \
@@ -116,8 +104,7 @@ RUN dnf -y install --disablerepo=fedora,fedora-archive \
     vim \
     nano \
     make \
-    gcc \
-    gcc-c++
+    gcc
 
 RUN dnf -y install --disablerepo=fedora,fedora-archive \
     unzip \
@@ -133,14 +120,22 @@ RUN dnf -y install \
     --disablerepo="*" \
     --enablerepo=ol8-baseos \
     --enablerepo=ol8-appstream \
-    qemu-kvm
-
-RUN dnf -y install \
-    --disablerepo=fedora,fedora-archive \
-    libvirt \
-    virt-viewer \
+    qemu-kvm \
     qemu-img \
+    libvirt \
+    libvirt-daemon-kvm \
+    virt-install \
     cloud-init
+
+RUN dnf groupinstall -y "Development Tools" && \
+    dnf install -y ninja-build meson glib2-devel pixman-devel && \
+    wget https://download.qemu.org/qemu-8.2.0.tar.xz -O /tmp/qemu-8.2.0.tar.xz && \
+    tar -C /tmp -xf /tmp/qemu-8.2.0.tar.xz && \
+    cd /tmp/qemu-8.2.0 && \
+    ./configure --target-list=x86_64-softmmu --enable-kvm && \
+    make -j$(nproc) && \
+    make install && \
+    rm -rf /tmp/qemu-8.2.0 /tmp/qemu-8.2.0.tar.xz
 
 RUN dnf -y install \
     --disablerepo=fedora,fedora-archive \
@@ -173,6 +168,13 @@ RUN wget -O /tmp/vagrant.rpm \
 
 RUN vagrant plugin install vagrant-libvirt || true
 
+RUN dnf module reset llvm-toolset -y
+
+RUN dnf remove -y gcc make ninja-build meson glib2-devel pixman-devel && \
+    dnf groupremove -y "Development Tools"
+
+RUN rm -rf /var/cache/dnf /var/cache/yum
+
 RUN mkdir -p \
     /workspace \
     /workspace/output \
@@ -186,3 +188,4 @@ RUN qemu-img --version
 RUN vagrant --version
 
 CMD ["/bin/bash"]
+
